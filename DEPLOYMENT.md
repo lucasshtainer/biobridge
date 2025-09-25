@@ -11,6 +11,7 @@
 - **Service Type:** Web Service
 - **Name:** `biobridge`
 - **Environment:** Node
+- **Root Directory:** `.` (root of repository)
 - **Build Command:** `npm install && npm run build`
 - **Start Command:** `node server.js`
 - **Plan:** Free
