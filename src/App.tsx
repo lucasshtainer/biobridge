@@ -398,7 +398,7 @@ function App() {
     }));
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // Validate all steps before final submission
     let allErrors: Errors = {};
@@ -410,6 +410,26 @@ function App() {
     if (Object.keys(allErrors).length > 0) {
       alert('Please complete all required fields before submitting.');
       return;
+    }
+    
+    try {
+      // Save user data to JSON file via API
+      const response = await fetch('/api/save-user-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('User data saved successfully:', result);
+      } else {
+        console.error('Failed to save user data');
+      }
+    } catch (error) {
+      console.error('Error saving user data:', error);
     }
     
     // Here you would typically send the data to your backend

@@ -1,0 +1,36 @@
+services:
+  # Backend API Service
+  - type: web
+    name: biobridge-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: OPENAI_API_KEY
+        sync: false  # You'll set this in Render dashboard
+      - key: ADMIN_PASSWORD
+        value: 1234
+    healthCheckPath: /api/chat
+    autoDeploy: true
+    branch: main
+
+  # Frontend Service
+  - type: web
+    name: biobridge-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://biobridge-api.onrender.com
+    autoDeploy: true
+    branch: main
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

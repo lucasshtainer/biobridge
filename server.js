@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import OpenAI from 'openai';
+import fs from 'fs';
 
 // Load environment variables
 dotenv.config();
@@ -19,12 +20,61 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// JSON file storage for user data
+const USER_DATA_FILE = path.join(__dirname, 'user_data.json');
+
+// Initialize user data file if it doesn't exist
+if (!fs.existsSync(USER_DATA_FILE)) {
+  fs.writeFileSync(USER_DATA_FILE, JSON.stringify([], null, 2));
+}
+
+// Helper function to read user data
+function readUserData() {
+  try {
+    const data = fs.readFileSync(USER_DATA_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading user data:', error);
+    return [];
+  }
+}
+
+// Helper function to save user data
+function saveUserData(userData) {
+  try {
+    const existingData = readUserData();
+    const newUserData = {
+      ...userData,
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString()
+    };
+    
+    existingData.push(newUserData);
+    fs.writeFileSync(USER_DATA_FILE, JSON.stringify(existingData, null, 2));
+    console.log('User data saved successfully:', newUserData.id);
+    return newUserData;
+  } catch (error) {
+    console.error('Error saving user data:', error);
+    throw error;
+  }
+}
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://biobridge-frontend.onrender.com', 'https://yourdomain.com']
+    : ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+}
 
 // Chat API endpoint
 app.post('/api/chat', async (req, res) => {
@@ -83,8 +133,8 @@ app.post('/api/admin-auth', async (req, res) => {
   try {
     const { password } = req.body;
     
-    // Set your admin password here - change this to something secure!
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '1Lucasshtainer';
+        // Set your admin password here - change this to something secure!
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '1234';
     
     // Clean and normalize passwords
     const cleanPassword = password ? password.trim() : '';
@@ -112,6 +162,43 @@ app.post('/api/admin-auth', async (req, res) => {
   }
 });
 
+// Save user data to JSON file
+app.post('/api/save-user-data', async (req, res) => {
+  try {
+    const userData = req.body;
+    
+    // Save to JSON file
+    const savedData = saveUserData(userData);
+    
+    res.json({ 
+      success: true, 
+      message: 'User data saved successfully',
+      id: savedData.id,
+      timestamp: savedData.timestamp
+    });
+  } catch (error) {
+    console.error('Error saving user data:', error);
+    res.status(500).json({ error: 'Failed to save user data' });
+  }
+});
+
+// Get all user data
+app.get('/api/user-data', async (req, res) => {
+  try {
+    const userData = readUserData();
+    
+    res.json({
+      success: true,
+      data: userData,
+      total_records: userData.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error getting user data:', error);
+    res.status(500).json({ error: 'Failed to get user data' });
+  }
+});
+
 // Data Collection API endpoints
 app.post('/api/collect-data', async (req, res) => {
   try {
@@ -125,6 +212,13 @@ app.post('/api/collect-data', async (req, res) => {
     
     // Process and collect data
     const success = medicalDataCollector.addData(dataWithConsent);
+    
+    // Also save to JSON file
+    try {
+      saveUserData(dataWithConsent);
+    } catch (jsonError) {
+      console.error('Error saving to JSON file:', jsonError);
+    }
     
     if (success) {
       res.json({ 
