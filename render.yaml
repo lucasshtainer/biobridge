@@ -1,10 +1,10 @@
 services:
-  # Backend API Service
+  # Combined Full-Stack Service
   - type: web
-    name: biobridge-api
+    name: biobridge
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install && npm run build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
@@ -18,19 +18,3 @@ services:
     healthCheckPath: /api/chat
     autoDeploy: true
     branch: main
-
-  # Frontend Service
-  - type: web
-    name: biobridge-frontend
-    env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://biobridge-api.onrender.com
-    autoDeploy: true
-    branch: main
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html

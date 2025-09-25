@@ -7,32 +7,21 @@
 - Sign up with GitHub
 - Connect your GitHub repository
 
-### 2. Deploy Backend API
+### 2. Deploy Full-Stack Application
 - **Service Type:** Web Service
-- **Name:** `biobridge-api`
+- **Name:** `biobridge`
 - **Environment:** Node
-- **Build Command:** `npm install`
+- **Build Command:** `npm install && npm run build`
 - **Start Command:** `node server.js`
 - **Plan:** Free
 
-### 3. Environment Variables for Backend
+### 3. Environment Variables
 Set these in Render dashboard:
 ```
 NODE_ENV=production
 PORT=10000
 OPENAI_API_KEY=your_openai_api_key_here
 ADMIN_PASSWORD=1234
-```
-
-### 4. Deploy Frontend
-- **Service Type:** Static Site
-- **Name:** `biobridge-frontend`
-- **Build Command:** `npm install && npm run build`
-- **Publish Directory:** `dist`
-
-### 5. Environment Variables for Frontend
-```
-VITE_API_URL=https://biobridge-api.onrender.com
 ```
 
 ### 6. Update Vite Config
