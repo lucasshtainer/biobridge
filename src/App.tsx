@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import GradientText from './GradientText'
 import ChatPage from './ChatPage'
 import DataViewer from './DataViewer'
@@ -248,7 +248,7 @@ function App() {
     const stepFields = step.fields as (keyof PatientData)[];
 
     stepFields.forEach(field => {
-      const value = formData[field];
+      const value = formData[field as keyof PatientData];
       
       switch (field) {
         case 'name':
@@ -259,7 +259,7 @@ function App() {
         case 'state':
         case 'zipCode':
         case 'emergencyContactName':
-          if (!value.trim()) errors[field] = "Required";
+          if (!(value as string)?.trim()) errors[field] = "Required";
           break;
         case 'age':
         case 'heightCm':
@@ -267,7 +267,7 @@ function App() {
         case 'systolic':
         case 'diastolic':
         case 'heartRate':
-          if (!isPositiveNumberStr(value)) errors[field] = "Enter a valid number";
+          if (!isPositiveNumberStr(value as string)) errors[field] = "Enter a valid number";
           break;
         case 'sex':
         case 'smoker':
@@ -275,14 +275,14 @@ function App() {
           if (!value) errors[field] = "Required";
           break;
         case 'emergencyContactPhone':
-          if (!phoneLooksValid(value)) errors[field] = "Enter a valid phone number";
+          if (!phoneLooksValid(value as string)) errors[field] = "Enter a valid phone number";
           break;
         case 'totalChol':
         case 'hdl':
         case 'ldl':
         case 'triglycerides':
         case 'fastingGlucose':
-          if (!isNonNegativeNumberStr(value)) errors[field] = "Enter a valid number";
+          if (!isNonNegativeNumberStr(value as string)) errors[field] = "Enter a valid number";
           break;
       }
     });
@@ -604,7 +604,7 @@ function App() {
                 <div className="bg-gray-50 rounded-xl shadow-lg p-6 border border-gray-200">
                   <h2 className="text-2xl font-semibold text-black mb-6">Medical Conditions</h2>
                   <div className="space-y-4">
-                    {submittedData.medicalConditions.map((condition, index) => (
+                    {submittedData.medicalConditions.map((condition) => (
                       <div key={condition.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex justify-between items-start">
                           <div>
@@ -627,7 +627,7 @@ function App() {
                 <div className="bg-gray-50 rounded-xl shadow-lg p-6 border border-gray-200">
                   <h2 className="text-2xl font-semibold text-black mb-6">Surgical History</h2>
                   <div className="space-y-4">
-                    {submittedData.surgicalHistory.map((surgery, index) => (
+                    {submittedData.surgicalHistory.map((surgery) => (
                       <div key={surgery.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex justify-between items-start">
                           <div>
@@ -1254,11 +1254,11 @@ function App() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {formData.medicalConditions.map((condition, index) => (
+                        {formData.medicalConditions.map((condition) => (
                           <MedicalConditionCard
                             key={condition.id}
                             condition={condition}
-                            index={index}
+                            index={0}
                             onUpdate={updateMedicalCondition}
                             onRemove={removeMedicalCondition}
                           />
@@ -1294,11 +1294,11 @@ function App() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {formData.surgicalHistory.map((surgery, index) => (
+                        {formData.surgicalHistory.map((surgery) => (
                           <SurgicalHistoryCard
                             key={surgery.id}
                             surgery={surgery}
-                            index={index}
+                            index={0}
                             onUpdate={updateSurgicalHistory}
                             onRemove={removeSurgicalHistory}
                           />
@@ -1520,7 +1520,8 @@ function SelectField({
         onChange={onChange}
         onBlur={onBlur}
         className={`w-full rounded-lg border px-3 py-2 bg-white outline-none transition ${
-          value ? "text-gray-900" : "text-gray-400",
+          value ? "text-gray-900" : "text-gray-400"
+        } ${
           error ? "border-red-400 focus:ring-2 focus:ring-red-200" : "border-gray-300 focus:ring-2 focus:ring-indigo-200"
         }`}
       >

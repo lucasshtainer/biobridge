@@ -15,13 +15,14 @@ const GradientText: React.FC<GradientTextProps> = ({
   className = '',
   children
 }) => {
-  const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
+  // Generate unique gradient ID for CSS
+  // const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
   
   const gradientColors = colors.join(', ');
   
   return (
     <div className={`relative ${className}`}>
-      <style jsx>{`
+      <style>{`
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }

@@ -172,7 +172,7 @@ class MedicalDataCollector {
     return 'high';
   }
 
-  private categorizeIncome(income: string): string {
+  private categorizeIncome(_income: string): string {
     // This would be collected separately with consent
     return 'not_collected'; // Default for privacy
   }
@@ -204,7 +204,7 @@ class MedicalDataCollector {
   }
 
   private categorizeConditions(conditions: any[]): string[] {
-    const categories = [];
+    const categories: string[] = [];
     conditions.forEach(condition => {
       if (condition.organ.includes('Heart')) categories.push('cardiovascular');
       if (condition.organ.includes('Lungs')) categories.push('respiratory');
@@ -215,7 +215,7 @@ class MedicalDataCollector {
   }
 
   private categorizeMedications(medications: string): string[] {
-    const categories = [];
+    const categories: string[] = [];
     if (medications.includes('blood pressure') || medications.includes('hypertension')) {
       categories.push('blood_pressure');
     }
