@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import GradientText from './GradientText'
 import ChatPage from './ChatPage'
 import DataViewer from './DataViewer'
@@ -222,23 +222,23 @@ function App() {
   const totalSteps = steps.length
 
   // Validation functions
-  function isPositiveNumberStr(s: string) {
+  const isPositiveNumberStr = useCallback((s: string) => {
     if (!s) return false;
     const n = Number(s);
     return Number.isFinite(n) && n > 0;
-  }
+  }, []);
 
-  function isNonNegativeNumberStr(s: string) {
+  const isNonNegativeNumberStr = useCallback((s: string) => {
     if (!s) return false;
     const n = Number(s);
     return Number.isFinite(n) && n >= 0;
-  }
+  }, []);
 
-  function phoneLooksValid(s: string) {
+  const phoneLooksValid = useCallback((s: string) => {
     if (!s) return false;
     const digits = s.replace(/\D/g, "");
     return digits.length >= 10;
-  }
+  }, []);
 
   const validateStep = useCallback((stepNumber: number): Errors => {
     const step = steps.find(s => s.id === stepNumber);
@@ -300,7 +300,7 @@ function App() {
 
   // Only validate on blur, not on every keystroke
   const [stepErrors, setStepErrors] = useState<Errors>({});
-  const hasCurrentStepErrors = Object.keys(stepErrors).length > 0;
+  const hasCurrentStepErrors = useMemo(() => Object.keys(stepErrors).length > 0, [stepErrors]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -1454,7 +1454,7 @@ function App() {
 }
 
 // Helper Components
-function TextField({
+const TextField = React.memo(function TextField({
   label,
   name,
   value,
@@ -1490,9 +1490,9 @@ function TextField({
       {error && <div className="mt-1 text-xs text-red-600">{error}</div>}
     </label>
   );
-}
+});
 
-function SelectField({
+const SelectField = React.memo(function SelectField({
   label,
   name,
   value,
@@ -1535,9 +1535,9 @@ function SelectField({
       {error && <div className="mt-1 text-xs text-red-600">{error}</div>}
     </label>
   );
-}
+});
 
-function TextArea({
+const TextArea = React.memo(function TextArea({
   label,
   name,
   value,
@@ -1563,7 +1563,7 @@ function TextArea({
       />
     </label>
   );
-}
+});
 
 function MedicalConditionCard({
   condition,
