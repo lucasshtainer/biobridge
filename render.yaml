@@ -3,15 +3,11 @@ services:
   - type: web
     name: biobridge
     env: node
-    plan: free
+    plan: starter
     rootDir: biobridge-main
     buildCommand: npm install && npm run build
     startCommand: node server.js
     envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
       - key: OPENAI_API_KEY
         sync: false  # You'll set this in Render dashboard
       - key: ADMIN_PASSWORD
