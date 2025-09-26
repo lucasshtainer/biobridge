@@ -4,7 +4,7 @@ services:
     name: biobridge
     env: node
     plan: free
-    rootDir: .
+    rootDir: biobridge-main
     buildCommand: npm install && npm run build
     startCommand: node server.js
     envVars:
