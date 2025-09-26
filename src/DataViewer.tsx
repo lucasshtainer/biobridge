@@ -11,7 +11,7 @@ const DataViewer: React.FC<DataViewerProps> = ({ onBack }) => {
   const [rawData, setRawData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'analytics' | 'raw' | 'export'>('analytics');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [, setIsAuthenticated] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
