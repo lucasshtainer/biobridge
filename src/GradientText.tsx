@@ -17,6 +17,7 @@ const GradientText: React.FC<GradientTextProps> = ({
 }) => {
   // Generate unique gradient ID for CSS
   // const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
+  //test
   
   const gradientColors = colors.join(', ');
   
