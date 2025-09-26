@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "server": "node server.js",
+    "server": "cross-env NODE_ENV=development node server.js",
+    "dev-server": "cross-env NODE_ENV=development node server.js",
     "start": "npm run build && npm run server"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
+    "cross-env": "^10.0.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",

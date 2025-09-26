@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import GradientText from './GradientText'
 import ChatPage from './ChatPage'
 import DataViewer from './DataViewer'
@@ -201,6 +201,7 @@ const BODY_PART_SURGERIES = {
 };
 
 function App() {
+  
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<PatientData>(EMPTY)
@@ -222,23 +223,23 @@ function App() {
   const totalSteps = steps.length
 
   // Validation functions
-  function isPositiveNumberStr(s: string) {
+  const isPositiveNumberStr = useCallback((s: string) => {
     if (!s) return false;
     const n = Number(s);
     return Number.isFinite(n) && n > 0;
-  }
+  }, []);
 
-  function isNonNegativeNumberStr(s: string) {
+  const isNonNegativeNumberStr = useCallback((s: string) => {
     if (!s) return false;
     const n = Number(s);
     return Number.isFinite(n) && n >= 0;
-  }
+  }, []);
 
-  function phoneLooksValid(s: string) {
+  const phoneLooksValid = useCallback((s: string) => {
     if (!s) return false;
     const digits = s.replace(/\D/g, "");
     return digits.length >= 10;
-  }
+  }, []);
 
   const validateStep = useCallback((stepNumber: number): Errors => {
     const step = steps.find(s => s.id === stepNumber);
@@ -300,26 +301,13 @@ function App() {
 
   // Only validate on blur, not on every keystroke
   const [stepErrors, setStepErrors] = useState<Errors>({});
-  const hasCurrentStepErrors = Object.keys(stepErrors).length > 0;
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked
-      setFormData(prev => ({
-        ...prev,
-        [name]: checked
-      }))
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }))
-    }
-  }
+  const hasCurrentStepErrors = useMemo(() => Object.keys(stepErrors).length > 0, [stepErrors]);
 
 
-  const nextStep = () => {
+
+
+
+  const nextStep = useCallback(() => {
     // Validate current step before proceeding
     const errors = validateStep(currentStep);
     setStepErrors(errors);
@@ -328,14 +316,14 @@ function App() {
       setCurrentStep(prev => prev + 1);
       setStepErrors({}); // Clear errors for next step
     }
-  }
+  }, [currentStep, validateStep, totalSteps])
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
       setStepErrors({}); // Clear errors when going back
     }
-  }
+  }, [currentStep])
 
   // Removed goToStep function - users must complete steps sequentially
 
@@ -987,7 +975,6 @@ function App() {
                       label="Full Name *"
                       name="name"
                       value={formData.name}
-                      onChange={handleInputChange}
                       error={stepErrors.name}
                       placeholder="Jane Doe"
                     />
@@ -996,7 +983,6 @@ function App() {
                       name="age"
                       type="number"
                       value={formData.age}
-                      onChange={handleInputChange}
                       error={stepErrors.age}
                       placeholder="32"
                     />
@@ -1004,7 +990,6 @@ function App() {
                       label="Sex *"
                       name="sex"
                       value={formData.sex}
-                      onChange={handleInputChange}
                       error={stepErrors.sex ? stepErrors.sex : undefined}
                       options={["Male", "Female", "Other", "Prefer not to say"]}
                       placeholder="Select"
@@ -1014,7 +999,6 @@ function App() {
                       name="email"
                       type="email"
                       value={formData.email}
-                      onChange={handleInputChange}
                       error={stepErrors.email ? stepErrors.email : undefined}
                       placeholder="jane@example.com"
                     />
@@ -1023,7 +1007,6 @@ function App() {
                       name="phone"
                       type="tel"
                       value={formData.phone}
-                      onChange={handleInputChange}
                       error={stepErrors.phone ? stepErrors.phone : undefined}
                       placeholder="(555) 123-4567"
                     />
@@ -1043,7 +1026,6 @@ function App() {
                       label="Street Address *"
                       name="address"
                       value={formData.address}
-                      onChange={handleInputChange}
                       error={stepErrors.address ? stepErrors.address : undefined}
                       placeholder="123 Main Street"
                     />
@@ -1052,7 +1034,6 @@ function App() {
                         label="City *"
                         name="city"
                         value={formData.city}
-                        onChange={handleInputChange}
                         error={stepErrors.city ? stepErrors.city : undefined}
                         placeholder="New York"
                       />
@@ -1060,7 +1041,6 @@ function App() {
                         label="State *"
                         name="state"
                         value={formData.state}
-                        onChange={handleInputChange}
                         error={stepErrors.state ? stepErrors.state : undefined}
                         placeholder="NY"
                       />
@@ -1068,7 +1048,6 @@ function App() {
                         label="ZIP Code *"
                         name="zipCode"
                         value={formData.zipCode}
-                        onChange={handleInputChange}
                         error={stepErrors.zipCode ? stepErrors.zipCode : undefined}
                         placeholder="10001"
                       />
@@ -1090,7 +1069,6 @@ function App() {
                       name="heightCm"
                       type="number"
                       value={formData.heightCm}
-                      onChange={handleInputChange}
                       error={stepErrors.heightCm ? stepErrors.heightCm : undefined}
                       placeholder="170"
                     />
@@ -1099,7 +1077,6 @@ function App() {
                       name="weightKg"
                       type="number"
                       value={formData.weightKg}
-                      onChange={handleInputChange}
                       error={stepErrors.weightKg ? stepErrors.weightKg : undefined}
                       placeholder="68"
                     />
@@ -1108,7 +1085,6 @@ function App() {
                       name="systolic"
                       type="number"
                       value={formData.systolic}
-                      onChange={handleInputChange}
                       error={stepErrors.systolic ? stepErrors.systolic : undefined}
                       placeholder="120"
                     />
@@ -1117,7 +1093,6 @@ function App() {
                       name="diastolic"
                       type="number"
                       value={formData.diastolic}
-                      onChange={handleInputChange}
                       error={stepErrors.diastolic ? stepErrors.diastolic : undefined}
                       placeholder="80"
                     />
@@ -1126,7 +1101,6 @@ function App() {
                       name="heartRate"
                       type="number"
                       value={formData.heartRate}
-                      onChange={handleInputChange}
                       error={stepErrors.heartRate ? stepErrors.heartRate : undefined}
                       placeholder="72"
                     />
@@ -1144,7 +1118,6 @@ function App() {
                       name="totalChol"
                       type="number"
                       value={formData.totalChol}
-                      onChange={handleInputChange}
                       error={stepErrors.totalChol ? stepErrors.totalChol : undefined}
                       placeholder="185"
                     />
@@ -1153,7 +1126,6 @@ function App() {
                       name="hdl"
                       type="number"
                       value={formData.hdl}
-                      onChange={handleInputChange}
                       error={stepErrors.hdl ? stepErrors.hdl : undefined}
                       placeholder="55"
                     />
@@ -1162,7 +1134,6 @@ function App() {
                       name="ldl"
                       type="number"
                       value={formData.ldl}
-                      onChange={handleInputChange}
                       error={stepErrors.ldl ? stepErrors.ldl : undefined}
                       placeholder="110"
                     />
@@ -1171,7 +1142,6 @@ function App() {
                       name="triglycerides"
                       type="number"
                       value={formData.triglycerides}
-                      onChange={handleInputChange}
                       error={stepErrors.triglycerides ? stepErrors.triglycerides : undefined}
                       placeholder="140"
                     />
@@ -1180,7 +1150,6 @@ function App() {
                       name="fastingGlucose"
                       type="number"
                       value={formData.fastingGlucose}
-                      onChange={handleInputChange}
                       error={stepErrors.fastingGlucose ? stepErrors.fastingGlucose : undefined}
                       placeholder="95"
                     />
@@ -1201,7 +1170,6 @@ function App() {
                         label="Smoking Status"
                         name="smoker"
                         value={formData.smoker}
-                        onChange={handleInputChange}
                         error={stepErrors.smoker ? stepErrors.smoker : undefined}
                         options={["No", "Yes", "Former"]}
                         placeholder="Select"
@@ -1210,7 +1178,6 @@ function App() {
                         label="Diabetes Status"
                         name="diabetes"
                         value={formData.diabetes}
-                        onChange={handleInputChange}
                         error={stepErrors.diabetes ? stepErrors.diabetes : undefined}
                         options={["No", "Prediabetes", "Type 1", "Type 2"]}
                         placeholder="Select"
@@ -1221,14 +1188,12 @@ function App() {
                         label="Current Medications"
                         name="medications"
                         value={formData.medications}
-                        onChange={handleInputChange}
                         placeholder="e.g., Atorvastatin 20mg nightly"
                       />
                       <TextArea
                         label="Allergies"
                         name="allergies"
                         value={formData.allergies}
-                        onChange={handleInputChange}
                         placeholder="e.g., Penicillin, peanuts"
                       />
                     </div>
@@ -1318,7 +1283,6 @@ function App() {
                       label="Emergency Contact Name"
                       name="emergencyContactName"
                       value={formData.emergencyContactName}
-                      onChange={handleInputChange}
                       error={stepErrors.emergencyContactName ? stepErrors.emergencyContactName : undefined}
                       placeholder="John Doe"
                     />
@@ -1327,7 +1291,6 @@ function App() {
                       name="emergencyContactPhone"
                       type="tel"
                       value={formData.emergencyContactPhone}
-                      onChange={handleInputChange}
                       error={stepErrors.emergencyContactPhone ? stepErrors.emergencyContactPhone : undefined}
                       placeholder="(555) 123-4567"
                     />
@@ -1344,21 +1307,18 @@ function App() {
                       label="Insurance Provider"
                       name="insuranceProvider"
                       value={formData.insuranceProvider}
-                      onChange={handleInputChange}
                       placeholder="Blue Cross Blue Shield"
                     />
                     <TextField
                       label="Insurance Policy Number"
                       name="insuranceNumber"
                       value={formData.insuranceNumber}
-                      onChange={handleInputChange}
                       placeholder="ABC123456789"
                     />
                     <SelectField
                       label="Preferred Language"
                       name="preferredLanguage"
                       value={formData.preferredLanguage}
-                      onChange={handleInputChange}
                       options={["English", "Spanish", "French", "German", "Other"]}
                       placeholder="Select Language"
                     />
@@ -1366,7 +1326,6 @@ function App() {
                       label="How did you hear about us?"
                       name="howDidYouHear"
                       value={formData.howDidYouHear}
-                      onChange={handleInputChange}
                       options={["Google Search", "Social Media", "Friend/Family Referral", "Healthcare Provider", "Advertisement", "Other"]}
                       placeholder="Select Option"
                     />
@@ -1453,13 +1412,11 @@ function App() {
   }
 }
 
-// Helper Components
+// COMPLETELY UNCONTROLLED INPUTS: No onChange, no re-renders, just pure HTML
 function TextField({
   label,
   name,
   value,
-  onChange,
-  onBlur,
   placeholder,
   type = "text",
   error,
@@ -1467,37 +1424,45 @@ function TextField({
   label: string;
   name: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onBlur?: () => void;
   placeholder?: string;
   type?: string;
   error?: string;
 }) {
+  const handleFocus = () => {
+    // Focus event handler
+  };
+
+  const handleBlur = () => {
+    // Blur event handler
+  };
+
+  // Static className
+  const inputClassName = `w-full rounded-lg border px-3 py-2 outline-none transition ${
+    error ? "border-red-400 focus:ring-2 focus:ring-red-200" : "border-gray-300 focus:ring-2 focus:ring-indigo-200"
+  }`;
+
   return (
     <label className="block">
       <div className="text-sm font-medium text-gray-700 mb-1">{label}</div>
       <input
         type={type}
         name={name}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
+        defaultValue={value}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         placeholder={placeholder}
-        className={`w-full rounded-lg border px-3 py-2 outline-none transition ${
-          error ? "border-red-400 focus:ring-2 focus:ring-red-200" : "border-gray-300 focus:ring-2 focus:ring-indigo-200"
-        }`}
+        className={inputClassName}
       />
       {error && <div className="mt-1 text-xs text-red-600">{error}</div>}
     </label>
   );
 }
 
+// COMPLETELY UNCONTROLLED SELECT: No onChange, no re-renders, just pure HTML
 function SelectField({
   label,
   name,
   value,
-  onChange,
-  onBlur,
   options,
   placeholder,
   error,
@@ -1505,25 +1470,34 @@ function SelectField({
   label: string;
   name: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  onBlur?: () => void;
   options: string[];
   placeholder?: string;
   error?: string;
 }) {
+  const handleFocus = () => {
+    // Focus event handler
+  };
+
+  const handleBlur = () => {
+    // Blur event handler
+  };
+
+  // Static className
+  const selectClassName = `w-full rounded-lg border px-3 py-2 bg-white outline-none transition ${
+    value ? "text-gray-900" : "text-gray-400"
+  } ${
+    error ? "border-red-400 focus:ring-2 focus:ring-red-200" : "border-gray-300 focus:ring-2 focus:ring-indigo-200"
+  }`;
+
   return (
     <label className="block">
       <div className="text-sm font-medium text-gray-700 mb-1">{label}</div>
       <select
         name={name}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        className={`w-full rounded-lg border px-3 py-2 bg-white outline-none transition ${
-          value ? "text-gray-900" : "text-gray-400"
-        } ${
-          error ? "border-red-400 focus:ring-2 focus:ring-red-200" : "border-gray-300 focus:ring-2 focus:ring-indigo-200"
-        }`}
+        defaultValue={value}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        className={selectClassName}
       >
         <option value="">{placeholder || "Select"}</option>
         {options.map((opt) => (
@@ -1537,35 +1511,46 @@ function SelectField({
   );
 }
 
+// COMPLETELY UNCONTROLLED TEXTAREA: No onChange, no re-renders, just pure HTML
 function TextArea({
   label,
   name,
   value,
-  onChange,
   placeholder,
 }: {
   label: string;
   name: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
 }) {
+  const handleFocus = () => {
+    // Focus event handler
+  };
+
+  const handleBlur = () => {
+    // Blur event handler
+  };
+
+  // Static className
+  const textareaClassName = "w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition resize-y focus:ring-2 focus:ring-indigo-200";
+
   return (
     <label className="block">
       <div className="text-sm font-medium text-gray-700 mb-1">{label}</div>
       <textarea
         name={name}
-        value={value}
-        onChange={onChange}
+        defaultValue={value}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         placeholder={placeholder}
         rows={3}
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none transition resize-y focus:ring-2 focus:ring-indigo-200"
+        className={textareaClassName}
       />
     </label>
   );
 }
 
-function MedicalConditionCard({
+const MedicalConditionCard = React.memo(function MedicalConditionCard({
   condition,
   index,
   onUpdate,
@@ -1579,13 +1564,30 @@ function MedicalConditionCard({
   const organOptions = Object.keys(ORGAN_CONDITIONS);
   const conditionOptions = condition.organ ? ORGAN_CONDITIONS[condition.organ as keyof typeof ORGAN_CONDITIONS] || [] : [];
 
+  // Create stable callback functions
+  const handleOrganChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onUpdate(condition.id, 'organ', e.target.value);
+  }, [condition.id, onUpdate]);
+
+  const handleConditionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onUpdate(condition.id, 'condition', e.target.value);
+  }, [condition.id, onUpdate]);
+
+  const handleDetailsChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onUpdate(condition.id, 'details', e.target.value);
+  }, [condition.id, onUpdate]);
+
+  const handleRemove = useCallback(() => {
+    onRemove(condition.id);
+  }, [condition.id, onRemove]);
+
   return (
     <div className="bg-white p-4 rounded-lg border border-gray-200">
       <div className="flex items-start justify-between mb-3">
         <h5 className="text-sm font-medium text-gray-900">Condition #{index + 1}</h5>
         <button
           type="button"
-          onClick={() => onRemove(condition.id)}
+          onClick={handleRemove}
           className="text-red-500 hover:text-red-700 text-sm"
         >
           Remove
@@ -1597,7 +1599,7 @@ function MedicalConditionCard({
           <label className="block text-xs font-medium text-gray-700 mb-1">Organ System</label>
           <select
             value={condition.organ}
-            onChange={(e) => onUpdate(condition.id, 'organ', e.target.value)}
+            onChange={handleOrganChange}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-200"
           >
             <option value="">Select organ system</option>
@@ -1611,7 +1613,7 @@ function MedicalConditionCard({
           <label className="block text-xs font-medium text-gray-700 mb-1">Condition</label>
           <select
             value={condition.condition}
-            onChange={(e) => onUpdate(condition.id, 'condition', e.target.value)}
+            onChange={handleConditionChange}
             disabled={!condition.organ}
             className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-200 ${
               !condition.organ ? 'bg-gray-100 cursor-not-allowed' : ''
@@ -1629,7 +1631,7 @@ function MedicalConditionCard({
         <label className="block text-xs font-medium text-gray-700 mb-1">Additional Details (Optional)</label>
         <textarea
           value={condition.details}
-          onChange={(e) => onUpdate(condition.id, 'details', e.target.value)}
+          onChange={handleDetailsChange}
           placeholder="Provide additional details about this condition..."
           rows={2}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition resize-y focus:ring-2 focus:ring-indigo-200"
@@ -1637,9 +1639,9 @@ function MedicalConditionCard({
       </div>
     </div>
   );
-}
+});
 
-function SurgicalHistoryCard({
+const SurgicalHistoryCard = React.memo(function SurgicalHistoryCard({
   surgery,
   index,
   onUpdate,
@@ -1657,13 +1659,34 @@ function SurgicalHistoryCard({
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 50 }, (_, i) => currentYear - i);
 
+  // Create stable callback functions
+  const handleBodyPartChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onUpdate(surgery.id, 'bodyPart', e.target.value);
+  }, [surgery.id, onUpdate]);
+
+  const handleSurgeryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onUpdate(surgery.id, 'surgery', e.target.value);
+  }, [surgery.id, onUpdate]);
+
+  const handleYearChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onUpdate(surgery.id, 'year', e.target.value);
+  }, [surgery.id, onUpdate]);
+
+  const handleDetailsChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onUpdate(surgery.id, 'details', e.target.value);
+  }, [surgery.id, onUpdate]);
+
+  const handleRemove = useCallback(() => {
+    onRemove(surgery.id);
+  }, [surgery.id, onRemove]);
+
   return (
     <div className="bg-white p-4 rounded-lg border border-gray-200">
       <div className="flex items-start justify-between mb-3">
         <h5 className="text-sm font-medium text-gray-900">Surgery #{index + 1}</h5>
         <button
           type="button"
-          onClick={() => onRemove(surgery.id)}
+          onClick={handleRemove}
           className="text-red-500 hover:text-red-700 text-sm"
         >
           Remove
@@ -1675,7 +1698,7 @@ function SurgicalHistoryCard({
           <label className="block text-xs font-medium text-gray-700 mb-1">Body Part</label>
           <select
             value={surgery.bodyPart}
-            onChange={(e) => onUpdate(surgery.id, 'bodyPart', e.target.value)}
+            onChange={handleBodyPartChange}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-200"
           >
             <option value="">Select body part</option>
@@ -1689,7 +1712,7 @@ function SurgicalHistoryCard({
           <label className="block text-xs font-medium text-gray-700 mb-1">Surgery Type</label>
           <select
             value={surgery.surgery}
-            onChange={(e) => onUpdate(surgery.id, 'surgery', e.target.value)}
+            onChange={handleSurgeryChange}
             disabled={!surgery.bodyPart}
             className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-200 ${
               !surgery.bodyPart ? 'bg-gray-100 cursor-not-allowed' : ''
@@ -1706,7 +1729,7 @@ function SurgicalHistoryCard({
           <label className="block text-xs font-medium text-gray-700 mb-1">Year</label>
           <select
             value={surgery.year}
-            onChange={(e) => onUpdate(surgery.id, 'year', e.target.value)}
+            onChange={handleYearChange}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-indigo-200"
           >
             <option value="">Select year</option>
@@ -1721,7 +1744,7 @@ function SurgicalHistoryCard({
         <label className="block text-xs font-medium text-gray-700 mb-1">Additional Details (Optional)</label>
         <textarea
           value={surgery.details}
-          onChange={(e) => onUpdate(surgery.id, 'details', e.target.value)}
+          onChange={handleDetailsChange}
           placeholder="Provide additional details about this surgery..."
           rows={2}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition resize-y focus:ring-2 focus:ring-indigo-200"
@@ -1729,6 +1752,6 @@ function SurgicalHistoryCard({
       </div>
     </div>
   );
-}
+});
 
 export default App
