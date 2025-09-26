@@ -204,7 +204,7 @@ app.post('/api/collect-data', async (req, res) => {
     const { patientData, consent } = req.body;
     
     // Import the data collector
-    const { medicalDataCollector } = await import('./src/dataCollection.js');
+    const { medicalDataCollector } = await import('./dataCollection.js');
     
     // Add consent to patient data
     const dataWithConsent = { ...patientData, ...consent };
@@ -240,7 +240,7 @@ app.post('/api/collect-data', async (req, res) => {
 // Get analytics data
 app.get('/api/analytics', async (req, res) => {
   try {
-    const { medicalDataCollector } = await import('./src/dataCollection.js');
+    const { medicalDataCollector } = await import('./dataCollection.js');
     const analytics = medicalDataCollector.getAnalytics();
     
     res.json({
@@ -257,7 +257,7 @@ app.get('/api/analytics', async (req, res) => {
 // Export data for commercial use
 app.get('/api/export-data', async (req, res) => {
   try {
-    const { medicalDataCollector } = await import('./src/dataCollection.js');
+    const { medicalDataCollector } = await import('./dataCollection.js');
     const data = medicalDataCollector.exportData();
     
     res.json({
