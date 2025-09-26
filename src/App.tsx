@@ -216,8 +216,7 @@ function App() {
     { id: 4, title: "Labs", fields: ["totalChol", "hdl", "ldl", "triglycerides", "fastingGlucose"] },
     { id: 5, title: "Medical History", fields: ["smoker", "diabetes", "medications", "allergies"] },
     { id: 6, title: "Surgical History", fields: [] },
-    { id: 7, title: "Emergency Contact", fields: ["emergencyContactName", "emergencyContactPhone"] },
-    { id: 8, title: "Insurance", fields: ["insuranceProvider", "insuranceNumber", "preferredLanguage", "howDidYouHear"] }
+    { id: 7, title: "Emergency Contact", fields: ["emergencyContactName", "emergencyContactPhone"] }
   ]
 
   const totalSteps = steps.length
@@ -251,39 +250,25 @@ function App() {
     stepFields.forEach(field => {
       const value = formData[field as keyof PatientData];
       
+      // Only validate number formats, not required fields
       switch (field) {
-        case 'name':
-        case 'email':
-        case 'phone':
-        case 'address':
-        case 'city':
-        case 'state':
-        case 'zipCode':
-        case 'emergencyContactName':
-          if (!(value as string)?.trim()) errors[field] = "Required";
-          break;
         case 'age':
         case 'heightCm':
         case 'weightKg':
         case 'systolic':
         case 'diastolic':
         case 'heartRate':
-          if (!isPositiveNumberStr(value as string)) errors[field] = "Enter a valid number";
-          break;
-        case 'sex':
-        case 'smoker':
-        case 'diabetes':
-          if (!value) errors[field] = "Required";
+          if (value && !isPositiveNumberStr(value as string)) errors[field] = "Enter a valid number";
           break;
         case 'emergencyContactPhone':
-          if (!phoneLooksValid(value as string)) errors[field] = "Enter a valid phone number";
+          if (value && !phoneLooksValid(value as string)) errors[field] = "Enter a valid phone number";
           break;
         case 'totalChol':
         case 'hdl':
         case 'ldl':
         case 'triglycerides':
         case 'fastingGlucose':
-          if (!isNonNegativeNumberStr(value as string)) errors[field] = "Enter a valid number";
+          if (value && !isNonNegativeNumberStr(value as string)) errors[field] = "Enter a valid number";
           break;
       }
     });
@@ -972,14 +957,14 @@ function App() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <TextField
-                      label="Full Name *"
+                      label="Full Name"
                       name="name"
                       value={formData.name}
                       error={stepErrors.name}
                       placeholder="Jane Doe"
                     />
                     <TextField
-                      label="Age (years) *"
+                      label="Age (years)"
                       name="age"
                       type="number"
                       value={formData.age}
@@ -987,7 +972,7 @@ function App() {
                       placeholder="32"
                     />
                     <SelectField
-                      label="Sex *"
+                      label="Sex"
                       name="sex"
                       value={formData.sex}
                       error={stepErrors.sex ? stepErrors.sex : undefined}
@@ -995,7 +980,7 @@ function App() {
                       placeholder="Select"
                     />
                     <TextField
-                      label="Email Address *"
+                      label="Email Address"
                       name="email"
                       type="email"
                       value={formData.email}
@@ -1003,7 +988,7 @@ function App() {
                       placeholder="jane@example.com"
                     />
                     <TextField
-                      label="Phone Number *"
+                      label="Phone Number"
                       name="phone"
                       type="tel"
                       value={formData.phone}
@@ -1023,7 +1008,7 @@ function App() {
                   </div>
                   <div className="space-y-4">
                     <TextField
-                      label="Street Address *"
+                      label="Street Address"
                       name="address"
                       value={formData.address}
                       error={stepErrors.address ? stepErrors.address : undefined}
@@ -1031,21 +1016,21 @@ function App() {
                     />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <TextField
-                        label="City *"
+                        label="City"
                         name="city"
                         value={formData.city}
                         error={stepErrors.city ? stepErrors.city : undefined}
                         placeholder="New York"
                       />
                       <TextField
-                        label="State *"
+                        label="State"
                         name="state"
                         value={formData.state}
                         error={stepErrors.state ? stepErrors.state : undefined}
                         placeholder="NY"
                       />
                       <TextField
-                        label="ZIP Code *"
+                        label="ZIP Code"
                         name="zipCode"
                         value={formData.zipCode}
                         error={stepErrors.zipCode ? stepErrors.zipCode : undefined}
@@ -1065,7 +1050,7 @@ function App() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <TextField
-                      label="Height (cm) *"
+                      label="Height (cm)"
                       name="heightCm"
                       type="number"
                       value={formData.heightCm}
@@ -1073,7 +1058,7 @@ function App() {
                       placeholder="170"
                     />
                     <TextField
-                      label="Weight (kg) *"
+                      label="Weight (kg)"
                       name="weightKg"
                       type="number"
                       value={formData.weightKg}
@@ -1081,7 +1066,7 @@ function App() {
                       placeholder="68"
                     />
                     <TextField
-                      label="Systolic (mmHg) *"
+                      label="Systolic (mmHg)"
                       name="systolic"
                       type="number"
                       value={formData.systolic}
@@ -1089,7 +1074,7 @@ function App() {
                       placeholder="120"
                     />
                     <TextField
-                      label="Diastolic (mmHg) *"
+                      label="Diastolic (mmHg)"
                       name="diastolic"
                       type="number"
                       value={formData.diastolic}
@@ -1097,7 +1082,7 @@ function App() {
                       placeholder="80"
                     />
                     <TextField
-                      label="Heart Rate (bpm) *"
+                      label="Heart Rate (bpm)"
                       name="heartRate"
                       type="number"
                       value={formData.heartRate}
@@ -1298,40 +1283,6 @@ function App() {
                 </div>
               )}
 
-              {/* Step 8: Insurance */}
-              {currentStep === 8 && (
-                <div className="space-y-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Insurance & Additional Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <TextField
-                      label="Insurance Provider"
-                      name="insuranceProvider"
-                      value={formData.insuranceProvider}
-                      placeholder="Blue Cross Blue Shield"
-                    />
-                    <TextField
-                      label="Insurance Policy Number"
-                      name="insuranceNumber"
-                      value={formData.insuranceNumber}
-                      placeholder="ABC123456789"
-                    />
-                    <SelectField
-                      label="Preferred Language"
-                      name="preferredLanguage"
-                      value={formData.preferredLanguage}
-                      options={["English", "Spanish", "French", "German", "Other"]}
-                      placeholder="Select Language"
-                    />
-                    <SelectField
-                      label="How did you hear about us?"
-                      name="howDidYouHear"
-                      value={formData.howDidYouHear}
-                      options={["Google Search", "Social Media", "Friend/Family Referral", "Healthcare Provider", "Advertisement", "Other"]}
-                      placeholder="Select Option"
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* Navigation Buttons */}
               <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
