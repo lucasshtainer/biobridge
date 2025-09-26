@@ -302,7 +302,7 @@ function App() {
   const [stepErrors, setStepErrors] = useState<Errors>({});
   const hasCurrentStepErrors = Object.keys(stepErrors).length > 0;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
@@ -316,10 +316,10 @@ function App() {
         [name]: value
       }))
     }
-  }
+  }, [])
 
 
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     // Validate current step before proceeding
     const errors = validateStep(currentStep);
     setStepErrors(errors);
@@ -328,14 +328,14 @@ function App() {
       setCurrentStep(prev => prev + 1);
       setStepErrors({}); // Clear errors for next step
     }
-  }
+  }, [currentStep, validateStep, totalSteps])
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
       setStepErrors({}); // Clear errors when going back
     }
-  }
+  }, [currentStep])
 
   // Removed goToStep function - users must complete steps sequentially
 
