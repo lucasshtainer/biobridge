@@ -20,21 +20,45 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// JSON file storage for user data
-const USER_DATA_FILE = path.join(__dirname, 'user_data.json');
+// JSON file storage for user data - using /dataLog directory on Render, fallback for local dev
+const DATA_LOG_DIR = process.env.NODE_ENV === 'production' ? '/dataLog' : path.join(__dirname, 'dataLog');
+const USER_DATA_FILE = path.join(DATA_LOG_DIR, 'user_data.json');
+
+// Ensure data directory exists
+if (!fs.existsSync(DATA_LOG_DIR)) {
+  try {
+    fs.mkdirSync(DATA_LOG_DIR, { recursive: true });
+    console.log(`Created data directory for persistent storage: ${DATA_LOG_DIR}`);
+  } catch (error) {
+    console.error(`Failed to create data directory ${DATA_LOG_DIR}:`, error.message);
+    console.log('Falling back to local directory for development');
+    const fallbackDir = path.join(__dirname, 'dataLog');
+    if (!fs.existsSync(fallbackDir)) {
+      fs.mkdirSync(fallbackDir, { recursive: true });
+    }
+    const fallbackFile = path.join(fallbackDir, 'user_data.json');
+    if (!fs.existsSync(fallbackFile)) {
+      fs.writeFileSync(fallbackFile, JSON.stringify([], null, 2));
+    }
+  }
+}
 
 // Initialize user data file if it doesn't exist
 if (!fs.existsSync(USER_DATA_FILE)) {
   fs.writeFileSync(USER_DATA_FILE, JSON.stringify([], null, 2));
+  console.log('Initialized user data file at:', USER_DATA_FILE);
 }
 
 // Helper function to read user data
 function readUserData() {
   try {
+    console.log('Reading user data from:', USER_DATA_FILE);
     const data = fs.readFileSync(USER_DATA_FILE, 'utf8');
-    return JSON.parse(data);
+    const parsedData = JSON.parse(data);
+    console.log(`Successfully read ${parsedData.length} user records from /dataLog`);
+    return parsedData;
   } catch (error) {
-    console.error('Error reading user data:', error);
+    console.error('Error reading user data from /dataLog:', error);
     return [];
   }
 }
@@ -42,6 +66,7 @@ function readUserData() {
 // Helper function to save user data
 function saveUserData(userData) {
   try {
+    console.log('Saving user data to /dataLog directory...');
     const existingData = readUserData();
     const newUserData = {
       ...userData,
@@ -51,10 +76,10 @@ function saveUserData(userData) {
     
     existingData.push(newUserData);
     fs.writeFileSync(USER_DATA_FILE, JSON.stringify(existingData, null, 2));
-    console.log('User data saved successfully:', newUserData.id);
+    console.log(`User data saved successfully to /dataLog: ${newUserData.id} (Total records: ${existingData.length})`);
     return newUserData;
   } catch (error) {
-    console.error('Error saving user data:', error);
+    console.error('Error saving user data to /dataLog:', error);
     throw error;
   }
 }
@@ -190,11 +215,34 @@ app.get('/api/user-data', async (req, res) => {
       success: true,
       data: userData,
       total_records: userData.length,
+      storage_location: USER_DATA_FILE,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error('Error getting user data:', error);
     res.status(500).json({ error: 'Failed to get user data' });
+  }
+});
+
+// Check data storage status
+app.get('/api/storage-status', async (req, res) => {
+  try {
+    const dataLogExists = fs.existsSync(DATA_LOG_DIR);
+    const userDataFileExists = fs.existsSync(USER_DATA_FILE);
+    const userData = readUserData();
+    
+    res.json({
+      success: true,
+      data_log_directory: DATA_LOG_DIR,
+      data_log_exists: dataLogExists,
+      user_data_file: USER_DATA_FILE,
+      user_data_file_exists: userDataFileExists,
+      total_records: userData.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error checking storage status:', error);
+    res.status(500).json({ error: 'Failed to check storage status' });
   }
 });
 
@@ -410,4 +458,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`User data storage configured to use: ${USER_DATA_FILE}`);
+  console.log(`Data directory: ${DATA_LOG_DIR}`);
 });
